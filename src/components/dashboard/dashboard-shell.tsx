@@ -21,7 +21,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       </div>
 
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetTrigger className="lg:hidden fixed top-3 left-3 z-40">
+        <SheetTrigger className="lg:hidden fixed top-3 left-3 z-50">
           <Button
             variant="ghost"
             size="icon"
@@ -30,7 +30,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <Menu className="w-5 h-5" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="p-0 w-[260px]">
+        <SheetContent side="left" className="p-0 w-[280px] sm:w-[300px] border-none" showCloseButton={false}>
           <Sidebar
             collapsed={false}
             onToggle={() => setMobileOpen(false)}
@@ -40,7 +40,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       </Sheet>
 
       <main className="flex-1 overflow-auto w-full min-w-0">
-        <div className="lg:hidden h-14" />
+        <div className="lg:hidden h-12" />
         <RoleGuard>{children}</RoleGuard>
       </main>
     </div>
