@@ -79,6 +79,49 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    if (!isFromMe && payload.body) {
+      const conv = await prisma.conversation.findUnique({
+        where: { id: conversation.id },
+        select: { aiEnabled: true },
+      });
+
+      if (conv?.aiEnabled) {
+        try {
+          const { generateAiReply } = await import("@/lib/ai-engine");
+          const aiResponse = await generateAiReply(payload.body, phoneNumber);
+
+          if (aiResponse) {
+            await prisma.message.create({
+              data: {
+                conversationId: conversation.id,
+                senderType: "AI",
+                content: aiResponse.reply,
+                isRead: true,
+              },
+            });
+
+            if (aiResponse.sentiment) {
+              await prisma.conversation.update({
+                where: { id: conversation.id },
+                data: { sentiment: aiResponse.sentiment },
+              });
+
+              const { checkEscalation } = await import("@/lib/escalation");
+              await checkEscalation(conversation.id, aiResponse.sentiment);
+            }
+
+            const wahaConfig = await prisma.wahaConfig.findFirst();
+            if (wahaConfig && wahaConfig.status === "connected") {
+              const { sendText } = await import("@/lib/waha");
+              await sendText(wahaConfig, payload.from, aiResponse.reply);
+            }
+          }
+        } catch (aiErr) {
+          console.error("AI auto-reply error:", aiErr);
+        }
+      }
+    }
+
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("Webhook error:", err);
