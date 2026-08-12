@@ -33,20 +33,22 @@ import {
   Bell,
 } from "lucide-react";
 import { type Role, hasAccess } from "@/lib/permissions";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { useI18n } from "@/lib/i18n";
 
-const navItems = [
-  { href: "/inbox", label: "Inbox", icon: MessageSquare, minRole: "AGENT" as Role },
-  { href: "/contacts", label: "Kontak", icon: Users, minRole: "AGENT" as Role },
-  { href: "/catalog", label: "Katalog", icon: ShoppingBag, minRole: "ADMIN" as Role },
-  { href: "/orders", label: "Order", icon: ClipboardList, minRole: "ADMIN" as Role },
-  { href: "/knowledge", label: "Knowledge Base", icon: BookOpen, minRole: "ADMIN" as Role },
-  { href: "/faq", label: "FAQ", icon: HelpCircle, minRole: "ADMIN" as Role },
-  { href: "/quick-replies", label: "Quick Reply", icon: Zap, minRole: "ADMIN" as Role },
-  { href: "/broadcast", label: "Tim", icon: UserPlus, minRole: "ADMIN" as Role },
-  { href: "/greeting", label: "Greeting", icon: Bell, minRole: "ADMIN" as Role },
-  { href: "/follow-up", label: "Follow-Up", icon: Clock, minRole: "ADMIN" as Role },
-  { href: "/analytics", label: "Analitik", icon: BarChart3, minRole: "ADMIN" as Role },
-  { href: "/settings", label: "Settings", icon: Settings, minRole: "ADMIN" as Role },
+const navItemsDef = [
+  { href: "/inbox", tKey: "inbox" as const, icon: MessageSquare, minRole: "AGENT" as Role },
+  { href: "/contacts", tKey: "contacts" as const, icon: Users, minRole: "AGENT" as Role },
+  { href: "/catalog", tKey: "catalog" as const, icon: ShoppingBag, minRole: "ADMIN" as Role },
+  { href: "/orders", tKey: "orders" as const, icon: ClipboardList, minRole: "ADMIN" as Role },
+  { href: "/knowledge", tKey: "knowledge" as const, icon: BookOpen, minRole: "ADMIN" as Role },
+  { href: "/faq", tKey: "faq" as const, icon: HelpCircle, minRole: "ADMIN" as Role },
+  { href: "/quick-replies", tKey: "quickReplies" as const, icon: Zap, minRole: "ADMIN" as Role },
+  { href: "/broadcast", tKey: "team" as const, icon: UserPlus, minRole: "ADMIN" as Role },
+  { href: "/greeting", tKey: "greeting" as const, icon: Bell, minRole: "ADMIN" as Role },
+  { href: "/follow-up", tKey: "followUp" as const, icon: Clock, minRole: "ADMIN" as Role },
+  { href: "/analytics", tKey: "analytics" as const, icon: BarChart3, minRole: "ADMIN" as Role },
+  { href: "/settings", tKey: "settings" as const, icon: Settings, minRole: "ADMIN" as Role },
 ];
 
 interface SidebarProps {
@@ -58,6 +60,7 @@ interface SidebarProps {
 export function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const { t } = useI18n();
 
   const initials = session?.user?.name
     ? session.user.name
@@ -97,7 +100,7 @@ export function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarProps) {
 
       <ScrollArea className="flex-1 py-3">
         <nav className="space-y-0.5 px-2">
-          {navItems.filter((item) => {
+          {navItemsDef.filter((item) => {
             const userRole = (session?.user as { role?: string })?.role as Role | undefined;
             if (!userRole) return true;
             return hasAccess(userRole, item.minRole);
@@ -123,12 +126,16 @@ export function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarProps) {
                     isActive ? "text-green-400" : "text-slate-500"
                   )}
                 />
-                <span className={cn("transition-all duration-300 overflow-hidden whitespace-nowrap", collapsed ? "w-0 opacity-0" : "w-auto opacity-100")}>{item.label}</span>
+                <span className={cn("transition-all duration-300 overflow-hidden whitespace-nowrap", collapsed ? "w-0 opacity-0" : "w-auto opacity-100")}>{t.nav[item.tKey]}</span>
               </Link>
             );
           })}
         </nav>
       </ScrollArea>
+
+      <div className="border-t border-white/10 p-2 flex justify-center">
+        <LanguageSwitcher compact={collapsed} />
+      </div>
 
       <div className="border-t border-white/10 p-3">
         <DropdownMenu>
@@ -173,7 +180,7 @@ export function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarProps) {
               className="text-red-600"
             >
               <LogOut className="w-4 h-4 mr-2" />
-              Keluar
+              {t.common.logout}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
