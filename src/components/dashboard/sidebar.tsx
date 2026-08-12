@@ -74,27 +74,20 @@ export function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarProps) {
       )}
     >
       <div className="flex items-center justify-between h-16 px-4 border-b border-white/10">
-        {!collapsed && (
-          <Link href="/inbox" className="flex items-center gap-2.5" onClick={onMobileClose}>
-            <div className="w-9 h-9 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-green-500/20">
-              <Bot className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <span className="font-bold text-base text-white tracking-tight">WA Chatbot</span>
-              <p className="text-[10px] text-green-400/80 -mt-0.5">AI Assistant</p>
-            </div>
-          </Link>
-        )}
-        {collapsed && (
-          <div className="w-9 h-9 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center mx-auto shadow-lg shadow-green-500/20">
+        <Link href="/inbox" className="flex items-center gap-2.5 overflow-hidden" onClick={onMobileClose}>
+          <div className="w-9 h-9 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-green-500/20">
             <Bot className="w-5 h-5 text-white" />
           </div>
-        )}
+          <div className={cn("transition-all duration-300 overflow-hidden whitespace-nowrap", collapsed ? "w-0 opacity-0" : "w-auto opacity-100")}>
+            <span className="font-bold text-base text-white tracking-tight">WA Chatbot</span>
+            <p className="text-[10px] text-green-400/80 -mt-0.5">AI Assistant</p>
+          </div>
+        </Link>
         <Button
           variant="ghost"
           size="icon"
           onClick={onToggle}
-          className="hidden lg:flex h-7 w-7 text-white/50 hover:text-white hover:bg-white/10"
+          className="hidden lg:flex h-7 w-7 text-white/50 hover:text-white hover:bg-white/10 shrink-0"
         >
           {collapsed ? <Menu className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
         </Button>
@@ -128,7 +121,7 @@ export function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarProps) {
                     isActive ? "text-green-400" : "text-slate-500"
                   )}
                 />
-                {!collapsed && <span>{item.label}</span>}
+                <span className={cn("transition-all duration-300 overflow-hidden whitespace-nowrap", collapsed ? "w-0 opacity-0" : "w-auto opacity-100")}>{item.label}</span>
               </Link>
             );
           })}
@@ -148,16 +141,14 @@ export function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarProps) {
                 {initials}
               </AvatarFallback>
             </Avatar>
-            {!collapsed && (
-              <div className="flex-1 text-left">
-                <p className="text-sm font-medium text-white truncate">
-                  {session?.user?.name || "User"}
-                </p>
-                <p className="text-xs text-slate-500 truncate">
-                  {session?.user?.email}
-                </p>
-              </div>
-            )}
+            <div className={cn("flex-1 text-left transition-all duration-300 overflow-hidden", collapsed ? "w-0 opacity-0" : "w-auto opacity-100")}>
+              <p className="text-sm font-medium text-white truncate">
+                {session?.user?.name || "User"}
+              </p>
+              <p className="text-xs text-slate-500 truncate">
+                {session?.user?.email}
+              </p>
+            </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <div className="px-2 py-1.5">
