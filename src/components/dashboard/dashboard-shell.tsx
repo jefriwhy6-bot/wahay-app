@@ -11,7 +11,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-slate-50">
       <div className="hidden lg:flex">
         <Sidebar
           collapsed={collapsed}
@@ -24,7 +24,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           <Button
             variant="ghost"
             size="icon"
-            className="bg-white shadow-sm border"
+            className="bg-white shadow-md border border-slate-200"
           >
             <Menu className="w-5 h-5" />
           </Button>
@@ -38,7 +38,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </SheetContent>
       </Sheet>
 
-      <main className="flex-1 overflow-auto bg-gray-50">{children}</main>
+      <main className="flex-1 overflow-auto">{children}</main>
     </div>
   );
 }

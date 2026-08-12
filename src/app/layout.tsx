@@ -9,9 +9,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Wahay — WhatsApp AI Assistant",
+  title: "WhatsApp AI Chatbot — Smart Customer Service",
   description:
-    "AI-powered WhatsApp Business Assistant + CRM + Order Management",
+    "AI-powered WhatsApp Chatbot for Business — Auto-reply, CRM, Order Management, Knowledge Base",
 };
 
 export default function RootLayout({

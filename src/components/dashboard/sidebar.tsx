@@ -29,6 +29,7 @@ import {
   LogOut,
   ChevronLeft,
   Menu,
+  Bot,
 } from "lucide-react";
 
 const navItems = [
@@ -67,31 +68,39 @@ export function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarProps) {
   return (
     <div
       className={cn(
-        "flex flex-col h-full bg-white border-r border-gray-200 transition-all duration-300",
+        "flex flex-col h-full bg-gradient-to-b from-slate-900 to-slate-800 transition-all duration-300",
         collapsed ? "w-[68px]" : "w-[260px]"
       )}
     >
-      <div className="flex items-center justify-between h-16 px-4 border-b border-gray-100">
+      <div className="flex items-center justify-between h-16 px-4 border-b border-white/10">
         {!collapsed && (
-          <Link href="/inbox" className="flex items-center gap-2" onClick={onMobileClose}>
-            <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
-              <MessageSquare className="w-4 h-4 text-white" />
+          <Link href="/inbox" className="flex items-center gap-2.5" onClick={onMobileClose}>
+            <div className="w-9 h-9 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-green-500/20">
+              <Bot className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-lg text-gray-900">Wahay</span>
+            <div>
+              <span className="font-bold text-base text-white tracking-tight">WA Chatbot</span>
+              <p className="text-[10px] text-green-400/80 -mt-0.5">AI Assistant</p>
+            </div>
           </Link>
+        )}
+        {collapsed && (
+          <div className="w-9 h-9 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center mx-auto shadow-lg shadow-green-500/20">
+            <Bot className="w-5 h-5 text-white" />
+          </div>
         )}
         <Button
           variant="ghost"
           size="icon"
           onClick={onToggle}
-          className="hidden lg:flex h-8 w-8 text-gray-500"
+          className="hidden lg:flex h-7 w-7 text-white/50 hover:text-white hover:bg-white/10"
         >
           {collapsed ? <Menu className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
         </Button>
       </div>
 
       <ScrollArea className="flex-1 py-3">
-        <nav className="space-y-1 px-2">
+        <nav className="space-y-0.5 px-2">
           {navItems.map((item) => {
             const isActive = pathname.startsWith(item.href);
             const Icon = item.icon;
@@ -102,16 +111,16 @@ export function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarProps) {
                 href={item.href}
                 onClick={onMobileClose}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
                   isActive
-                    ? "bg-emerald-50 text-emerald-700"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                    ? "bg-green-500/20 text-green-400 shadow-sm"
+                    : "text-slate-400 hover:bg-white/5 hover:text-white"
                 )}
               >
                 <Icon
                   className={cn(
-                    "w-5 h-5 shrink-0",
-                    isActive ? "text-emerald-600" : "text-gray-400"
+                    "w-[18px] h-[18px] shrink-0",
+                    isActive ? "text-green-400" : "text-slate-500"
                   )}
                 />
                 {!collapsed && <span>{item.label}</span>}
@@ -121,25 +130,25 @@ export function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarProps) {
         </nav>
       </ScrollArea>
 
-      <div className="border-t border-gray-100 p-3">
+      <div className="border-t border-white/10 p-3">
         <DropdownMenu>
           <DropdownMenuTrigger
             className={cn(
-              "flex items-center gap-3 w-full rounded-lg px-2 py-2 hover:bg-gray-100 transition-colors outline-none",
+              "flex items-center gap-3 w-full rounded-lg px-2 py-2 hover:bg-white/5 transition-colors outline-none",
               collapsed && "justify-center"
             )}
           >
             <Avatar className="h-8 w-8">
-              <AvatarFallback className="bg-emerald-100 text-emerald-700 text-xs font-semibold">
+              <AvatarFallback className="bg-gradient-to-br from-green-400 to-emerald-600 text-white text-xs font-semibold">
                 {initials}
               </AvatarFallback>
             </Avatar>
             {!collapsed && (
               <div className="flex-1 text-left">
-                <p className="text-sm font-medium text-gray-900 truncate">
+                <p className="text-sm font-medium text-white truncate">
                   {session?.user?.name || "User"}
                 </p>
-                <p className="text-xs text-gray-500 truncate">
+                <p className="text-xs text-slate-500 truncate">
                   {session?.user?.email}
                 </p>
               </div>
