@@ -12,13 +12,13 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50">
-      <div className="hidden lg:flex shrink-0">
+    <div className="flex h-screen overflow-hidden">
+      <aside className="hidden lg:block shrink-0 bg-slate-900">
         <Sidebar
           collapsed={collapsed}
           onToggle={() => setCollapsed(!collapsed)}
         />
-      </div>
+      </aside>
 
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetTrigger className="lg:hidden fixed top-3 left-3 z-50">
@@ -30,7 +30,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <Menu className="w-5 h-5" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="p-0 w-[280px] sm:w-[300px] border-none" showCloseButton={false}>
+        <SheetContent side="left" className="p-0 w-[280px] sm:w-[300px] !border-r-0 !border-none shadow-2xl" showCloseButton={false}>
           <Sidebar
             collapsed={false}
             onToggle={() => setMobileOpen(false)}
@@ -39,7 +39,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </SheetContent>
       </Sheet>
 
-      <main className="flex-1 overflow-auto w-full min-w-0">
+      <main className="flex-1 overflow-auto min-w-0 bg-slate-50">
         <div className="lg:hidden h-12" />
         <RoleGuard>{children}</RoleGuard>
       </main>
