@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Settings, Bot, Phone, Building2, Loader2, Save } from "lucide-react";
+import { Settings, Bot, Phone, Building2, Loader2, Save, Wifi, WifiOff, QrCode } from "lucide-react";
 
 interface BrandData {
   id?: string;
@@ -319,69 +319,199 @@ export default function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="waha">
-          <Card>
-            <CardHeader>
-              <CardTitle>Konfigurasi WAHA</CardTitle>
-              <CardDescription>
-                Koneksi ke WhatsApp HTTP API (WAHA)
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>WAHA Base URL</Label>
-                <Input
-                  value={waha.baseUrl}
-                  onChange={(e) =>
-                    setWaha({ ...waha, baseUrl: e.target.value })
-                  }
-                  placeholder="http://localhost:3001"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>API Key</Label>
-                  <Input
-                    type="password"
-                    value={waha.apiKey}
-                    onChange={(e) =>
-                      setWaha({ ...waha, apiKey: e.target.value })
-                    }
-                    placeholder="WAHA API Key"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Session Name</Label>
-                  <Input
-                    value={waha.sessionName}
-                    onChange={(e) =>
-                      setWaha({ ...waha, sessionName: e.target.value })
-                    }
-                    placeholder="default"
-                  />
-                </div>
-              </div>
-
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
-                <strong>Note:</strong> WAHA belum terhubung. Fitur ini akan aktif setelah WAHA di-deploy dan dikonfigurasi.
-              </div>
-
-              <Button
-                onClick={() => save("waha", waha)}
-                disabled={saving === "waha"}
-                className="bg-emerald-600 hover:bg-emerald-700"
-              >
-                {saving === "waha" ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <Save className="w-4 h-4 mr-2" />
-                )}
-                Simpan WAHA Config
-              </Button>
-            </CardContent>
-          </Card>
+          <WahaTab
+            waha={waha}
+            setWaha={setWaha}
+            saving={saving}
+            onSave={() => save("waha", waha)}
+          />
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+function WahaTab({
+  waha,
+  setWaha,
+  saving,
+  onSave,
+}: {
+  waha: WahaData;
+  setWaha: (w: WahaData) => void;
+  saving: string;
+  onSave: () => void;
+}) {
+  const [connStatus, setConnStatus] = useState<{
+    connected: boolean;
+    status?: string;
+    qrCode?: string;
+    me?: { id: string; pushName: string };
+    error?: string;
+  }>({ connected: false });
+  const [connecting, setConnecting] = useState(false);
+  const [checking, setChecking] = useState(false);
+
+  const checkStatus = useCallback(async () => {
+    setChecking(true);
+    try {
+      const res = await fetch("/api/waha/session");
+      const data = await res.json();
+      setConnStatus(data);
+    } catch {
+      setConnStatus({ connected: false, error: "Gagal cek status" });
+    }
+    setChecking(false);
+  }, []);
+
+  useEffect(() => {
+    if (waha.baseUrl && waha.baseUrl !== "http://localhost:3001") {
+      checkStatus();
+    }
+  }, [waha.baseUrl, checkStatus]);
+
+  useEffect(() => {
+    if (connStatus.status === "SCAN_QR_CODE") {
+      const interval = setInterval(checkStatus, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [connStatus.status, checkStatus]);
+
+  async function handleConnect() {
+    setConnecting(true);
+    try {
+      const res = await fetch("/api/waha/session", { method: "POST" });
+      const data = await res.json();
+      if (data.error) {
+        toast.error(data.error);
+      } else {
+        toast.success("Session dimulai, tunggu QR code...");
+        setTimeout(checkStatus, 2000);
+      }
+    } catch {
+      toast.error("Gagal connect");
+    }
+    setConnecting(false);
+  }
+
+  async function handleDisconnect() {
+    try {
+      await fetch("/api/waha/session", { method: "DELETE" });
+      toast.success("Session dihentikan");
+      setConnStatus({ connected: false, status: "STOPPED" });
+    } catch {
+      toast.error("Gagal disconnect");
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Konfigurasi WAHA</CardTitle>
+        <CardDescription>Koneksi ke WhatsApp HTTP API (WAHA)</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Connection Status */}
+        <div className={`rounded-lg p-4 border ${connStatus.connected ? "bg-emerald-50 border-emerald-200" : "bg-gray-50 border-gray-200"}`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {connStatus.connected ? (
+                <Wifi className="w-5 h-5 text-emerald-600" />
+              ) : (
+                <WifiOff className="w-5 h-5 text-gray-400" />
+              )}
+              <div>
+                <p className="font-medium text-sm">
+                  {connStatus.connected ? "Terhubung" : "Tidak Terhubung"}
+                </p>
+                {connStatus.me && (
+                  <p className="text-xs text-gray-500">{connStatus.me.pushName} ({connStatus.me.id})</p>
+                )}
+                {connStatus.status && !connStatus.connected && (
+                  <p className="text-xs text-gray-500">Status: {connStatus.status}</p>
+                )}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={checkStatus}
+                disabled={checking}
+              >
+                {checking ? <Loader2 className="w-3 h-3 animate-spin" /> : "Cek Status"}
+              </Button>
+              {connStatus.connected ? (
+                <Button variant="outline" size="sm" onClick={handleDisconnect} className="text-red-600 border-red-200">
+                  Disconnect
+                </Button>
+              ) : (
+                <Button size="sm" onClick={handleConnect} disabled={connecting} className="bg-emerald-600 hover:bg-emerald-700">
+                  {connecting ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : null}
+                  Connect
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* QR Code */}
+        {connStatus.status === "SCAN_QR_CODE" && connStatus.qrCode && (
+          <div className="border rounded-lg p-6 text-center bg-white">
+            <QrCode className="w-6 h-6 text-emerald-600 mx-auto mb-2" />
+            <p className="text-sm font-medium mb-3">Scan QR Code dengan WhatsApp</p>
+            <img
+              src={connStatus.qrCode}
+              alt="QR Code"
+              className="mx-auto w-64 h-64 border rounded"
+            />
+            <p className="text-xs text-gray-400 mt-2">Auto-refresh setiap 5 detik...</p>
+          </div>
+        )}
+
+        {/* Config Form */}
+        <div className="space-y-2">
+          <Label>WAHA Base URL</Label>
+          <Input
+            value={waha.baseUrl}
+            onChange={(e) => setWaha({ ...waha, baseUrl: e.target.value })}
+            placeholder="https://your-waha.up.railway.app"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>API Key</Label>
+            <Input
+              type="password"
+              value={waha.apiKey}
+              onChange={(e) => setWaha({ ...waha, apiKey: e.target.value })}
+              placeholder="WAHA API Key"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Session Name</Label>
+            <Input
+              value={waha.sessionName}
+              onChange={(e) => setWaha({ ...waha, sessionName: e.target.value })}
+              placeholder="default"
+            />
+          </div>
+        </div>
+
+        <Button
+          onClick={onSave}
+          disabled={saving === "waha"}
+          className="bg-emerald-600 hover:bg-emerald-700"
+        >
+          {saving === "waha" ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : (
+            <Save className="w-4 h-4 mr-2" />
+          )}
+          Simpan WAHA Config
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
