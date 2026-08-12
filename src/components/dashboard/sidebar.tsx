@@ -163,12 +163,17 @@ export function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarProps) {
             <div className="px-2 py-1.5">
               <p className="text-sm font-medium">{session?.user?.name}</p>
               <p className="text-xs text-gray-500">{session?.user?.email}</p>
+              <p className="text-[10px] text-emerald-600 font-medium mt-0.5">
+                {(session?.user as { role?: string })?.role || ""}
+              </p>
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => window.location.href = "/settings"}>
-              <Settings className="w-4 h-4 mr-2" />
-              Settings
-            </DropdownMenuItem>
+            {hasAccess(((session?.user as { role?: string })?.role || "AGENT") as Role, "ADMIN") && (
+              <DropdownMenuItem onClick={() => window.location.href = "/settings"}>
+                <Settings className="w-4 h-4 mr-2" />
+                Settings
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => signOut({ callbackUrl: "/login" })}
