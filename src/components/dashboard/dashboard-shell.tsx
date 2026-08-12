@@ -30,7 +30,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <Menu className="w-5 h-5" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="p-0 w-[280px] sm:w-[300px] !border-r-0 !border-none shadow-2xl" showCloseButton={false}>
+        <SheetContent side="left" className="p-0 w-[260px] gap-0 bg-slate-900 !border-r-0 !border-none shadow-2xl overflow-hidden" showCloseButton={false}>
           <Sidebar
             collapsed={false}
             onToggle={() => setMobileOpen(false)}
