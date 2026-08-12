@@ -1,0 +1,484 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [pgvector(map: "vector")]
+}
+
+// ═══════════════════════════════════════
+// AUTH & TEAM
+// ═══════════════════════════════════════
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  role         Role     @default(ADMIN)
+  licenseKey   String?
+  languagePref String   @default("id")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  assignedChats      Conversation[] @relation("AssignedAgent")
+  teamMembers        TeamMember[]
+  escalationsHandled Escalation[]   @relation("EscalationHandler")
+  agentMetrics       AgentMetric[]
+}
+
+model TeamMember {
+  id        String   @id @default(cuid())
+  userId    String
+  role      Role     @default(AGENT)
+  invitedBy String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  AGENT
+}
+
+// ═══════════════════════════════════════
+// CONFIGURATION
+// ═══════════════════════════════════════
+
+model BrandProfile {
+  id              String   @id @default(cuid())
+  businessName    String
+  description     String?  @db.Text
+  tone            String   @default("friendly")
+  logoUrl         String?
+  operatingHours  Json?
+  holidays        Json?
+  languageDefault String   @default("id")
+  signature       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  greetings GreetingTemplate[]
+}
+
+model WahaConfig {
+  id          String   @id @default(cuid())
+  baseUrl     String
+  apiKey      String
+  sessionName String   @default("default")
+  status      String   @default("disconnected")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AiConfig {
+  id           String   @id @default(cuid())
+  baseUrl      String
+  apiKey       String
+  modelName    String   @default("gpt-4o-mini")
+  temperature  Float    @default(0.7)
+  maxTokens    Int      @default(1024)
+  systemPrompt String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// ═══════════════════════════════════════
+// KNOWLEDGE BASE & FAQ
+// ═══════════════════════════════════════
+
+model KnowledgeDocument {
+  id         String   @id @default(cuid())
+  filename   String
+  fileUrl    String
+  status     String   @default("processing")
+  chunkCount Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  chunks KnowledgeChunk[]
+}
+
+model KnowledgeChunk {
+  id         String                      @id @default(cuid())
+  documentId String
+  content    String                      @db.Text
+  embedding  Unsupported("vector(1536)")?
+  createdAt  DateTime                    @default(now())
+
+  document KnowledgeDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+}
+
+model FaqTemplate {
+  id        String   @id @default(cuid())
+  question  String   @db.Text
+  answer    String   @db.Text
+  keywords  String[]
+  category  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ═══════════════════════════════════════
+// CONVERSATIONS & MESSAGES
+// ═══════════════════════════════════════
+
+model Conversation {
+  id            String    @id @default(cuid())
+  contactId     String
+  lastMessageAt DateTime?
+  isRead        Boolean   @default(false)
+  assignedTo    String?
+  aiEnabled     Boolean   @default(true)
+  tags          String[]
+  sentiment     Sentiment @default(NEUTRAL)
+  isEscalated   Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  contact       Contact      @relation(fields: [contactId], references: [id])
+  assignedAgent User?        @relation("AssignedAgent", fields: [assignedTo], references: [id])
+  messages      Message[]
+  escalations   Escalation[]
+  orders        Order[]
+
+  @@index([contactId])
+  @@index([lastMessageAt])
+  @@index([isEscalated])
+}
+
+model Message {
+  id             String     @id @default(cuid())
+  conversationId String
+  senderType     SenderType
+  content        String     @db.Text
+  mediaType      MediaType?
+  mediaUrl       String?
+  mediaMimeType  String?
+  sentiment      Sentiment  @default(NEUTRAL)
+  isRead         Boolean    @default(false)
+  createdAt      DateTime   @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([createdAt])
+}
+
+enum SenderType {
+  USER
+  AI
+  CONTACT
+  SYSTEM
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  AUDIO
+  DOCUMENT
+}
+
+enum Sentiment {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+  ANGRY
+}
+
+// ═══════════════════════════════════════
+// CRM — CONTACT MANAGEMENT
+// ═══════════════════════════════════════
+
+model Contact {
+  id            String   @id @default(cuid())
+  phoneNumber   String   @unique
+  name          String?
+  profilePicUrl String?
+  tags          String[]
+  notes         String?  @db.Text
+  customFields  Json?
+  totalSpent    Float    @default(0)
+  orderCount    Int      @default(0)
+  firstChatAt   DateTime @default(now())
+  lastChatAt    DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  conversations Conversation[]
+  orders        Order[]
+
+  @@index([phoneNumber])
+  @@index([totalSpent])
+}
+
+// ═══════════════════════════════════════
+// PRODUCT CATALOG & ORDERS
+// ═══════════════════════════════════════
+
+model ProductCategory {
+  id        String   @id @default(cuid())
+  name      String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  price       Float
+  stock       Int      @default(0)
+  imageUrl    String?
+  categoryId  String?
+  isActive    Boolean  @default(true)
+  variants    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  category   ProductCategory? @relation(fields: [categoryId], references: [id])
+  orderItems OrderItem[]
+
+  @@index([categoryId])
+  @@index([isActive])
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  contactId       String
+  conversationId  String?
+  status          OrderStatus @default(PENDING)
+  totalAmount     Float
+  shippingAddress String?     @db.Text
+  notes           String?     @db.Text
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  contact      Contact       @relation(fields: [contactId], references: [id])
+  conversation Conversation? @relation(fields: [conversationId], references: [id])
+  items        OrderItem[]
+
+  @@index([contactId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Float
+  variant   String?
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  COMPLETED
+  CANCELLED
+}
+
+// ═══════════════════════════════════════
+// SMART ESCALATION
+// ═══════════════════════════════════════
+
+model Escalation {
+  id             String           @id @default(cuid())
+  conversationId String
+  reason         EscalationReason
+  triggerDetail  String?          @db.Text
+  handledBy      String?
+  resolvedAt     DateTime?
+  createdAt      DateTime         @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  handler      User?        @relation("EscalationHandler", fields: [handledBy], references: [id])
+
+  @@index([conversationId])
+  @@index([createdAt])
+}
+
+enum EscalationReason {
+  ANGRY_SENTIMENT
+  KEYWORD_TRIGGER
+  NO_RESOLUTION
+  MANUAL
+}
+
+model EscalationRule {
+  id                 String     @id @default(cuid())
+  isActive           Boolean    @default(true)
+  sentimentThreshold Sentiment?
+  keywords           String[]
+  maxUnanswered      Int?
+  autoDisableAi      Boolean    @default(true)
+  autoAssignTo       String?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+}
+
+// ═══════════════════════════════════════
+// AUTO FOLLOW-UP & BROADCAST
+// ═══════════════════════════════════════
+
+model FollowUpRule {
+  id              String           @id @default(cuid())
+  name            String
+  scenario        FollowUpScenario
+  delayHours      Int
+  messageTemplate String           @db.Text
+  maxAttempts     Int              @default(1)
+  isActive        Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  logs FollowUpLog[]
+}
+
+model FollowUpLog {
+  id           String   @id @default(cuid())
+  ruleId       String
+  contactPhone String
+  attempt      Int      @default(1)
+  sentAt       DateTime @default(now())
+  status       String   @default("sent")
+
+  rule FollowUpRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@index([ruleId])
+  @@index([contactPhone])
+}
+
+enum FollowUpScenario {
+  ORDER_PENDING
+  POST_PURCHASE
+  INACTIVE_CUSTOMER
+  CUSTOM
+}
+
+model Broadcast {
+  id              String          @id @default(cuid())
+  name            String
+  message         String          @db.Text
+  mediaUrl        String?
+  mediaType       MediaType?
+  targetFilter    Json?
+  targetCount     Int             @default(0)
+  sentCount       Int             @default(0)
+  deliveredCount  Int             @default(0)
+  readCount       Int             @default(0)
+  failedCount     Int             @default(0)
+  status          BroadcastStatus @default(DRAFT)
+  scheduledAt     DateTime?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  delayPerMessage Int             @default(3)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+enum BroadcastStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  COMPLETED
+  CANCELLED
+}
+
+// ═══════════════════════════════════════
+// QUICK REPLY TEMPLATES
+// ═══════════════════════════════════════
+
+model QuickReply {
+  id        String     @id @default(cuid())
+  title     String
+  shortcut  String     @unique
+  content   String     @db.Text
+  category  String?
+  mediaUrl  String?
+  mediaType MediaType?
+  sortOrder Int        @default(0)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+// ═══════════════════════════════════════
+// GREETING TEMPLATES
+// ═══════════════════════════════════════
+
+model GreetingTemplate {
+  id             String       @id @default(cuid())
+  brandProfileId String
+  type           GreetingType
+  targetTags     String[]
+  message        String       @db.Text
+  delaySeconds   Int          @default(2)
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  brandProfile BrandProfile @relation(fields: [brandProfileId], references: [id], onDelete: Cascade)
+
+  @@index([brandProfileId])
+  @@index([type])
+}
+
+enum GreetingType {
+  NEW_CUSTOMER
+  RETURNING_CUSTOMER
+  VIP_CUSTOMER
+  AFTER_HOURS
+  HOLIDAY
+}
+
+// ═══════════════════════════════════════
+// ANALYTICS & AGENT METRICS
+// ═══════════════════════════════════════
+
+model AgentMetric {
+  id                String   @id @default(cuid())
+  userId            String
+  date              DateTime @db.Date
+  chatsHandled      Int      @default(0)
+  chatsResolved     Int      @default(0)
+  chatsEscalated    Int      @default(0)
+  avgResponseTimeMs Int?
+  totalRating       Int      @default(0)
+  ratingCount       Int      @default(0)
+  createdAt         DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([date])
+}
+
+model ChatRating {
+  id             String   @id @default(cuid())
+  conversationId String
+  rating         Int
+  feedback       String?  @db.Text
+  createdAt      DateTime @default(now())
+
+  @@index([conversationId])
+  @@index([createdAt])
+}
