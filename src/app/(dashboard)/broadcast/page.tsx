@@ -101,14 +101,14 @@ export default function BroadcastPage() {
 
   return (
     <div className="p-4 sm:p-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Users className="w-6 h-6 text-emerald-600" />
-          <h1 className="text-2xl font-bold text-gray-900">Tim & Anggota</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Users className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" />
+          <h1 className="text-lg sm:text-2xl font-bold text-gray-900">Tim & Anggota</h1>
           <Badge variant="secondary">{members.length}</Badge>
         </div>
         <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (open) setCreatedCredentials(null); }}>
-          <DialogTrigger className="inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer">
+          <DialogTrigger className="inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium h-9 px-3 sm:px-4 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer w-full sm:w-auto">
             <Plus className="w-4 h-4" /> Tambah Anggota
           </DialogTrigger>
           <DialogContent>
@@ -167,25 +167,25 @@ export default function BroadcastPage() {
         </Dialog>
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800 mb-6">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4 text-xs sm:text-sm text-blue-800 mb-4 sm:mb-6">
         <strong>Roles:</strong> Owner (full access) · Admin (manage settings & agents) · Agent (handle chat only)
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         {members.map((m) => (
           <Card key={m.id}>
-            <CardContent className="py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
-                    <Shield className="w-5 h-5 text-emerald-600" />
+            <CardContent className="py-3 sm:py-4 px-3 sm:px-6">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                    <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{m.name || m.email}</p>
-                    <p className="text-sm text-gray-500">{m.email}</p>
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm sm:text-base text-gray-900 truncate">{m.name || m.email}</p>
+                    <p className="text-xs sm:text-sm text-gray-500 truncate">{m.email}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                   {m.role === "OWNER" ? (
                     <Badge className={roleColors[m.role]}>{roleLabels[m.role]}</Badge>
                   ) : (

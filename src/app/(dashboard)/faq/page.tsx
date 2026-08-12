@@ -119,10 +119,10 @@ export default function FaqPage() {
 
   return (
     <div className="p-4 sm:p-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <HelpCircle className="w-6 h-6 text-emerald-600" />
-          <h1 className="text-2xl font-bold text-gray-900">FAQ Template</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" />
+          <h1 className="text-lg sm:text-2xl font-bold text-gray-900">FAQ Template</h1>
           <Badge variant="secondary">{faqs.length}</Badge>
         </div>
         <Dialog

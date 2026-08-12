@@ -55,7 +55,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
       {/* Main content */}
       <main className="flex-1 overflow-auto min-w-0 bg-slate-50">
-        <div className="lg:hidden h-14" />
+        <div className="lg:hidden h-12" />
         <RoleGuard>{children}</RoleGuard>
       </main>
     </div>
