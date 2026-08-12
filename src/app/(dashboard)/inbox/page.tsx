@@ -137,7 +137,7 @@ export default function InboxPage() {
         "w-full md:w-[380px] border-r border-gray-200 bg-white flex flex-col",
         selected && "hidden md:flex"
       )}>
-        <div className="p-4 border-b border-gray-100">
+        <div className="p-4 pl-14 lg:pl-4 border-b border-gray-100">
           <h2 className="text-lg font-semibold text-gray-900">Inbox</h2>
           <p className="text-sm text-gray-500">{conversations.length} percakapan</p>
         </div>

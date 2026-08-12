@@ -109,22 +109,22 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-        <Settings className="w-6 h-6 text-emerald-600" />
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto">
+      <div className="flex items-center gap-3 mb-4 sm:mb-6">
+        <Settings className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" />
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Settings</h1>
       </div>
 
-      <Tabs defaultValue="brand" className="space-y-6">
+      <Tabs defaultValue="brand" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="brand" className="gap-2">
-            <Building2 className="w-4 h-4" /> Brand
+          <TabsTrigger value="brand" className="gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Brand
           </TabsTrigger>
-          <TabsTrigger value="ai" className="gap-2">
-            <Bot className="w-4 h-4" /> AI
+          <TabsTrigger value="ai" className="gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> AI
           </TabsTrigger>
-          <TabsTrigger value="waha" className="gap-2">
-            <Phone className="w-4 h-4" /> WAHA
+          <TabsTrigger value="waha" className="gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Phone className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> WAHA
           </TabsTrigger>
         </TabsList>
 

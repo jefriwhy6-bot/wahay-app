@@ -57,7 +57,7 @@ export default function AnalyticsPage() {
   const maxCount = Math.max(...chartData.map((d) => d.count), 1);
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-6xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
         <BarChart3 className="w-6 h-6 text-emerald-600" />
         <h1 className="text-2xl font-bold text-gray-900">Analitik</h1>

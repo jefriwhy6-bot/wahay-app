@@ -13,7 +13,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">
-      <div className="hidden lg:flex">
+      <div className="hidden lg:flex shrink-0">
         <Sidebar
           collapsed={collapsed}
           onToggle={() => setCollapsed(!collapsed)}
@@ -25,7 +25,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           <Button
             variant="ghost"
             size="icon"
-            className="bg-white shadow-md border border-slate-200"
+            className="bg-white shadow-md border border-slate-200 rounded-full"
           >
             <Menu className="w-5 h-5" />
           </Button>
@@ -39,7 +39,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </SheetContent>
       </Sheet>
 
-      <main className="flex-1 overflow-auto"><RoleGuard>{children}</RoleGuard></main>
+      <main className="flex-1 overflow-auto w-full min-w-0">
+        <div className="lg:hidden h-14" />
+        <RoleGuard>{children}</RoleGuard>
+      </main>
     </div>
   );
 }
