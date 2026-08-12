@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { semanticSearch } from "@/lib/embeddings";
 
 interface AiResponse {
   reply: string;
@@ -15,7 +16,10 @@ export async function generateAiReply(
 
     const brandProfile = await prisma.brandProfile.findFirst();
 
-    const relevantChunks = await searchKnowledge(customerMessage);
+    let relevantChunks = await semanticSearch(customerMessage, 5);
+    if (relevantChunks.length === 0) {
+      relevantChunks = await searchKnowledge(customerMessage);
+    }
 
     const systemPrompt = buildSystemPrompt(
       aiConfig.systemPrompt,

@@ -1,5 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { generateAndStoreEmbedding } from "@/lib/embeddings";
+
+async function generateEmbeddingsBackground(chunks: { id: string; content: string }[]) {
+  for (const chunk of chunks) {
+    try {
+      await generateAndStoreEmbedding(chunk.id, chunk.content);
+    } catch (err) {
+      console.error(`Embedding failed for chunk ${chunk.id}:`, err);
+    }
+  }
+}
 
 export async function GET() {
   try {
@@ -65,17 +76,20 @@ export async function POST(req: NextRequest) {
 
     const chunks = chunkText(text);
 
-    await prisma.knowledgeChunk.createMany({
-      data: chunks.map((content) => ({
-        documentId: doc.id,
-        content,
-      })),
-    });
+    const createdChunks = await Promise.all(
+      chunks.map((content) =>
+        prisma.knowledgeChunk.create({
+          data: { documentId: doc.id, content },
+        })
+      )
+    );
 
     await prisma.knowledgeDocument.update({
       where: { id: doc.id },
       data: { status: "ready", chunkCount: chunks.length },
     });
+
+    generateEmbeddingsBackground(createdChunks.map((c) => ({ id: c.id, content: c.content })));
 
     return NextResponse.json({
       id: doc.id,
