@@ -31,19 +31,20 @@ import {
   Menu,
   Bot,
 } from "lucide-react";
+import { type Role, hasAccess } from "@/lib/permissions";
 
 const navItems = [
-  { href: "/inbox", label: "Inbox", icon: MessageSquare },
-  { href: "/contacts", label: "Kontak", icon: Users },
-  { href: "/catalog", label: "Katalog", icon: ShoppingBag },
-  { href: "/orders", label: "Order", icon: ClipboardList },
-  { href: "/knowledge", label: "Knowledge Base", icon: BookOpen },
-  { href: "/faq", label: "FAQ", icon: HelpCircle },
-  { href: "/quick-replies", label: "Quick Reply", icon: Zap },
-  { href: "/broadcast", label: "Tim", icon: UserPlus },
-  { href: "/follow-up", label: "Follow-Up", icon: Clock },
-  { href: "/analytics", label: "Analitik", icon: BarChart3 },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/inbox", label: "Inbox", icon: MessageSquare, minRole: "AGENT" as Role },
+  { href: "/contacts", label: "Kontak", icon: Users, minRole: "AGENT" as Role },
+  { href: "/catalog", label: "Katalog", icon: ShoppingBag, minRole: "ADMIN" as Role },
+  { href: "/orders", label: "Order", icon: ClipboardList, minRole: "ADMIN" as Role },
+  { href: "/knowledge", label: "Knowledge Base", icon: BookOpen, minRole: "ADMIN" as Role },
+  { href: "/faq", label: "FAQ", icon: HelpCircle, minRole: "ADMIN" as Role },
+  { href: "/quick-replies", label: "Quick Reply", icon: Zap, minRole: "ADMIN" as Role },
+  { href: "/broadcast", label: "Tim", icon: UserPlus, minRole: "ADMIN" as Role },
+  { href: "/follow-up", label: "Follow-Up", icon: Clock, minRole: "ADMIN" as Role },
+  { href: "/analytics", label: "Analitik", icon: BarChart3, minRole: "ADMIN" as Role },
+  { href: "/settings", label: "Settings", icon: Settings, minRole: "ADMIN" as Role },
 ];
 
 interface SidebarProps {
@@ -101,7 +102,11 @@ export function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarProps) {
 
       <ScrollArea className="flex-1 py-3">
         <nav className="space-y-0.5 px-2">
-          {navItems.map((item) => {
+          {navItems.filter((item) => {
+            const userRole = (session?.user as { role?: string })?.role as Role | undefined;
+            if (!userRole) return true;
+            return hasAccess(userRole, item.minRole);
+          }).map((item) => {
             const isActive = pathname.startsWith(item.href);
             const Icon = item.icon;
 
