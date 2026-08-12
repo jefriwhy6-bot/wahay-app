@@ -30,6 +30,7 @@ import {
   ChevronLeft,
   Menu,
   Bot,
+  Bell,
 } from "lucide-react";
 import { type Role, hasAccess } from "@/lib/permissions";
 
@@ -42,6 +43,7 @@ const navItems = [
   { href: "/faq", label: "FAQ", icon: HelpCircle, minRole: "ADMIN" as Role },
   { href: "/quick-replies", label: "Quick Reply", icon: Zap, minRole: "ADMIN" as Role },
   { href: "/broadcast", label: "Tim", icon: UserPlus, minRole: "ADMIN" as Role },
+  { href: "/greeting", label: "Greeting", icon: Bell, minRole: "ADMIN" as Role },
   { href: "/follow-up", label: "Follow-Up", icon: Clock, minRole: "ADMIN" as Role },
   { href: "/analytics", label: "Analitik", icon: BarChart3, minRole: "ADMIN" as Role },
   { href: "/settings", label: "Settings", icon: Settings, minRole: "ADMIN" as Role },

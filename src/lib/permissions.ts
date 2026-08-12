@@ -25,6 +25,7 @@ export const pagePermissions: Record<string, Role> = {
   "/faq": "ADMIN",
   "/quick-replies": "ADMIN",
   "/broadcast": "ADMIN",
+  "/greeting": "ADMIN",
   "/follow-up": "ADMIN",
   "/analytics": "ADMIN",
   "/settings": "ADMIN",

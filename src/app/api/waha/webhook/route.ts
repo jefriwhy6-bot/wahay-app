@@ -80,6 +80,41 @@ export async function POST(req: NextRequest) {
     });
 
     if (!isFromMe && payload.body) {
+      const { shouldSendGreeting, getGreetingMessage, isWithinOperatingHours } =
+        await import("@/lib/greeting");
+
+      const brand = await prisma.brandProfile.findFirst({
+        select: { operatingHours: true },
+      });
+      const withinHours = isWithinOperatingHours(
+        brand?.operatingHours as Record<string, { open: string; close: string } | null> | null
+      );
+
+      const needsGreeting = await shouldSendGreeting(conversation.id);
+      if (needsGreeting) {
+        const greeting = await getGreetingMessage(phoneNumber, withinHours);
+        if (greeting) {
+          await prisma.message.create({
+            data: {
+              conversationId: conversation.id,
+              senderType: "SYSTEM",
+              content: greeting,
+              isRead: true,
+            },
+          });
+
+          const wahaConfig = await prisma.wahaConfig.findFirst();
+          if (wahaConfig && wahaConfig.status === "connected") {
+            const { sendText } = await import("@/lib/waha");
+            await sendText(wahaConfig, payload.from, greeting);
+          }
+        }
+      }
+
+      if (!withinHours) {
+        return NextResponse.json({ ok: true });
+      }
+
       const conv = await prisma.conversation.findUnique({
         where: { id: conversation.id },
         select: { aiEnabled: true },
