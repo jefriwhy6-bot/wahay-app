@@ -27,6 +27,7 @@ export const pagePermissions: Record<string, Role> = {
   "/broadcast": "ADMIN",
   "/greeting": "ADMIN",
   "/follow-up": "ADMIN",
+  "/agent-performance": "ADMIN",
   "/analytics": "ADMIN",
   "/settings": "ADMIN",
 };

@@ -31,6 +31,7 @@ import {
   Menu,
   Bot,
   Bell,
+  TrendingUp,
 } from "lucide-react";
 import { type Role, hasAccess } from "@/lib/permissions";
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -47,6 +48,7 @@ const navItemsDef = [
   { href: "/broadcast", tKey: "team" as const, icon: UserPlus, minRole: "ADMIN" as Role },
   { href: "/greeting", tKey: "greeting" as const, icon: Bell, minRole: "ADMIN" as Role },
   { href: "/follow-up", tKey: "followUp" as const, icon: Clock, minRole: "ADMIN" as Role },
+  { href: "/agent-performance", tKey: "agentPerformance" as const, icon: TrendingUp, minRole: "ADMIN" as Role },
   { href: "/analytics", tKey: "analytics" as const, icon: BarChart3, minRole: "ADMIN" as Role },
   { href: "/settings", tKey: "settings" as const, icon: Settings, minRole: "ADMIN" as Role },
 ];
