@@ -13,7 +13,7 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
-import { Users, Plus, Trash2, Loader2, Shield } from "lucide-react";
+import { Users, Plus, Trash2, Loader2, Shield, Copy, Check } from "lucide-react";
 
 interface TeamMember {
   id: string;
@@ -45,6 +45,8 @@ export default function BroadcastPage() {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("AGENT");
+  const [createdCredentials, setCreatedCredentials] = useState<{ email: string; password: string; name: string } | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => { loadTeam(); }, []);
 
@@ -64,7 +66,7 @@ export default function BroadcastPage() {
     });
     if (res.ok) {
       toast.success("Anggota tim berhasil ditambahkan!");
-      setDialogOpen(false);
+      setCreatedCredentials({ email, password, name });
       setEmail(""); setName(""); setPassword(""); setRole("AGENT");
       loadTeam();
     } else {
@@ -105,30 +107,62 @@ export default function BroadcastPage() {
           <h1 className="text-2xl font-bold text-gray-900">Tim & Anggota</h1>
           <Badge variant="secondary">{members.length}</Badge>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (open) setCreatedCredentials(null); }}>
           <DialogTrigger className="inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer">
             <Plus className="w-4 h-4" /> Tambah Anggota
           </DialogTrigger>
           <DialogContent>
-            <DialogHeader><DialogTitle>Tambah Anggota Tim</DialogTitle></DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2"><Label>Nama</Label><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nama lengkap" /></div>
-              <div className="space-y-2"><Label>Email</Label><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" /></div>
-              <div className="space-y-2"><Label>Password</Label><Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password untuk login" /></div>
-              <div className="space-y-2">
-                <Label>Role</Label>
-                <Select value={role} onValueChange={(v) => setRole(v ?? "AGENT")}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ADMIN">Admin</SelectItem>
-                    <SelectItem value="AGENT">Agent</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button onClick={handleAdd} disabled={saving} className="w-full bg-emerald-600 hover:bg-emerald-700">
-                {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Tambah
-              </Button>
-            </div>
+            {createdCredentials ? (
+              <>
+                <DialogHeader><DialogTitle>Akun Berhasil Dibuat</DialogTitle></DialogHeader>
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-600">Kirimkan info login berikut ke anggota tim:</p>
+                  <div className="bg-gray-50 border rounded-lg p-4 space-y-2 font-mono text-sm">
+                    {createdCredentials.name && <p><span className="text-gray-500">Nama:</span> {createdCredentials.name}</p>}
+                    <p><span className="text-gray-500">Email:</span> {createdCredentials.email}</p>
+                    <p><span className="text-gray-500">Password:</span> {createdCredentials.password}</p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => {
+                      const text = `Login WhatsApp AI Chatbot:\n${createdCredentials.name ? `Nama: ${createdCredentials.name}\n` : ""}Email: ${createdCredentials.email}\nPassword: ${createdCredentials.password}`;
+                      navigator.clipboard.writeText(text);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    }}
+                  >
+                    {copied ? <Check className="w-4 h-4 mr-2 text-green-600" /> : <Copy className="w-4 h-4 mr-2" />}
+                    {copied ? "Tersalin!" : "Copy Info Login"}
+                  </Button>
+                  <Button onClick={() => { setCreatedCredentials(null); setDialogOpen(false); }} className="w-full bg-emerald-600 hover:bg-emerald-700">
+                    Selesai
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <DialogHeader><DialogTitle>Tambah Anggota Tim</DialogTitle></DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2"><Label>Nama</Label><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nama lengkap" /></div>
+                  <div className="space-y-2"><Label>Email</Label><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" /></div>
+                  <div className="space-y-2"><Label>Password</Label><Input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password untuk login" /></div>
+                  <div className="space-y-2">
+                    <Label>Role</Label>
+                    <Select value={role} onValueChange={(v) => setRole(v ?? "AGENT")}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ADMIN">Admin</SelectItem>
+                        <SelectItem value="AGENT">Agent</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button onClick={handleAdd} disabled={saving} className="w-full bg-emerald-600 hover:bg-emerald-700">
+                    {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Tambah
+                  </Button>
+                </div>
+              </>
+            )}
           </DialogContent>
         </Dialog>
       </div>
