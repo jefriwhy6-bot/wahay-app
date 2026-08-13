@@ -35,11 +35,15 @@ export async function generateAndStoreEmbedding(chunkId: string, content: string
   if (!embedding) return;
 
   const vectorStr = `[${embedding.join(",")}]`;
-  await prisma.$executeRawUnsafe(
-    `UPDATE "KnowledgeChunk" SET embedding = $1::vector WHERE id = $2`,
-    vectorStr,
-    chunkId
-  );
+  try {
+    await prisma.$executeRawUnsafe(
+      `UPDATE "KnowledgeChunk" SET embedding = $1::vector WHERE id = $2`,
+      vectorStr,
+      chunkId
+    );
+  } catch (err) {
+    console.error("Store embedding error:", err);
+  }
 }
 
 export async function semanticSearch(query: string, limit: number = 5): Promise<string[]> {
@@ -48,14 +52,18 @@ export async function semanticSearch(query: string, limit: number = 5): Promise<
 
   const vectorStr = `[${queryEmbedding.join(",")}]`;
 
-  const results: { content: string }[] = await prisma.$queryRawUnsafe(
-    `SELECT content FROM "KnowledgeChunk"
-     WHERE embedding IS NOT NULL
-     ORDER BY embedding <=> $1::vector
-     LIMIT $2`,
-    vectorStr,
-    limit
-  );
+  try {
+    const results = await prisma.$queryRawUnsafe<{ content: string }[]>(
+      `SELECT content FROM "KnowledgeChunk"
+       WHERE embedding IS NOT NULL
+       ORDER BY embedding <=> $1::vector
+       LIMIT $2`,
+      vectorStr,
+      limit
+    );
 
-  return results.map((r) => r.content);
+    return results.map((r) => r.content);
+  } catch {
+    return [];
+  }
 }

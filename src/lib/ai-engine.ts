@@ -8,7 +8,7 @@ interface AiResponse {
 
 export async function generateAiReply(
   customerMessage: string,
-  contactPhone: string
+  _contactPhone: string
 ): Promise<AiResponse | null> {
   try {
     const aiConfig = await prisma.aiConfig.findFirst();
