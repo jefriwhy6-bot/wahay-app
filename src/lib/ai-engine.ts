@@ -21,10 +21,13 @@ export async function generateAiReply(
       relevantChunks = await searchKnowledge(customerMessage);
     }
 
+    const productInfo = await searchProducts(customerMessage);
+
     const systemPrompt = buildSystemPrompt(
       aiConfig.systemPrompt,
       brandProfile,
-      relevantChunks
+      relevantChunks,
+      productInfo
     );
 
     const messages = [
@@ -87,10 +90,52 @@ async function searchKnowledge(query: string): Promise<string[]> {
   return chunks.map((c) => c.content);
 }
 
+async function searchProducts(query: string): Promise<string> {
+  const keywords = query
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((w) => w.length > 2)
+    .slice(0, 5);
+
+  if (keywords.length === 0) return "";
+
+  const products = await prisma.product.findMany({
+    where: {
+      isActive: true,
+      OR: keywords.map((kw) => ({
+        OR: [
+          { name: { contains: kw, mode: "insensitive" as const } },
+          { description: { contains: kw, mode: "insensitive" as const } },
+        ],
+      })),
+    },
+    take: 5,
+    select: { name: true, description: true, price: true, stock: true, imageUrl: true },
+  });
+
+  if (products.length === 0) return "";
+
+  let info = "\n\n--- KATALOG PRODUK ---\n";
+  info += "Berikut produk yang relevan:\n\n";
+  for (const p of products) {
+    info += `• ${p.name} — Rp ${p.price.toLocaleString("id-ID")}`;
+    if (p.stock > 0) info += ` (stok: ${p.stock})`;
+    else info += ` (HABIS)`;
+    if (p.description) info += `\n  ${p.description}`;
+    if (p.imageUrl) info += `\n  Foto: ${p.imageUrl}`;
+    info += "\n\n";
+  }
+  info += "--- END KATALOG ---";
+  info += "\n\nJika customer bertanya tentang produk, berikan info lengkap termasuk harga dan stok. Jika ada foto produk (URL), sertakan dalam jawaban dengan format: [Lihat foto: URL]";
+
+  return info;
+}
+
 function buildSystemPrompt(
   customPrompt: string | null,
   brand: { businessName: string; description: string | null; tone: string; signature: string | null } | null,
-  knowledgeChunks: string[]
+  knowledgeChunks: string[],
+  productInfo: string
 ): string {
   let prompt = customPrompt || "Kamu adalah asisten customer service yang membantu.";
 
@@ -107,6 +152,10 @@ function buildSystemPrompt(
     prompt += knowledgeChunks.join("\n\n");
     prompt += "\n--- END KNOWLEDGE BASE ---";
     prompt += "\n\nJika pertanyaan tidak bisa dijawab dari knowledge base, jawab dengan jujur bahwa kamu tidak memiliki informasi tersebut.";
+  }
+
+  if (productInfo) {
+    prompt += productInfo;
   }
 
   prompt += "\n\nJawab dalam Bahasa Indonesia, singkat dan jelas. Jangan melebihi 300 kata.";

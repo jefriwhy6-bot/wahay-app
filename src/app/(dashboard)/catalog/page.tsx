@@ -40,6 +40,7 @@ export default function CatalogPage() {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("0");
+  const [imageUrl, setImageUrl] = useState("");
   const [isActive, setIsActive] = useState(true);
 
   useEffect(() => {
@@ -58,6 +59,7 @@ export default function CatalogPage() {
     setDescription("");
     setPrice("");
     setStock("0");
+    setImageUrl("");
     setIsActive(true);
     setEditingId(null);
   }
@@ -68,6 +70,7 @@ export default function CatalogPage() {
     setDescription(p.description || "");
     setPrice(p.price.toString());
     setStock(p.stock.toString());
+    setImageUrl(p.imageUrl || "");
     setIsActive(p.isActive);
     setDialogOpen(true);
   }
@@ -82,7 +85,7 @@ export default function CatalogPage() {
     const res = await fetch("/api/catalog", {
       method: editingId ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: editingId, name, description, price, stock, isActive }),
+      body: JSON.stringify({ id: editingId, name, description, price, stock, imageUrl: imageUrl || null, isActive }),
     });
 
     if (res.ok) {
@@ -152,6 +155,16 @@ export default function CatalogPage() {
                   <Input type="number" value={stock} onChange={(e) => setStock(e.target.value)} placeholder="0" />
                 </div>
               </div>
+              <div className="space-y-2">
+                <Label>URL Foto Produk (opsional)</Label>
+                <Input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://example.com/foto-produk.jpg" />
+                {imageUrl && (
+                  <div className="mt-2 rounded-lg overflow-hidden border w-20 h-20">
+                    <img src={imageUrl} alt="Preview" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  </div>
+                )}
+                <p className="text-xs text-gray-400">Paste link gambar dari hosting (imgur, postimg, supabase storage, dll)</p>
+              </div>
               <div className="flex items-center gap-2">
                 <Switch checked={isActive} onCheckedChange={setIsActive} />
                 <Label>Produk aktif</Label>
@@ -177,23 +190,36 @@ export default function CatalogPage() {
           {products.map((p) => (
             <Card key={p.id} className={!p.isActive ? "opacity-60" : ""}>
               <CardContent className="py-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-gray-900">{p.name}</h3>
-                      {!p.isActive && <Badge variant="secondary">Nonaktif</Badge>}
+                <div className="flex gap-3">
+                  {p.imageUrl ? (
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border shrink-0 bg-gray-100">
+                      <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
                     </div>
-                    {p.description && <p className="text-sm text-gray-500 mt-1">{p.description}</p>}
-                    <p className="text-lg font-bold text-emerald-600 mt-2">{formatPrice(p.price)}</p>
-                    <p className="text-xs text-gray-400">Stok: {p.stock}</p>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => openEdit(p)}>
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(p.id)} className="text-red-500">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                  ) : (
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border shrink-0 bg-gray-50 flex items-center justify-center">
+                      <Package className="w-6 h-6 text-gray-300" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-gray-900 truncate">{p.name}</h3>
+                          {!p.isActive && <Badge variant="secondary">Nonaktif</Badge>}
+                        </div>
+                        {p.description && <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">{p.description}</p>}
+                        <p className="text-lg font-bold text-emerald-600 mt-1">{formatPrice(p.price)}</p>
+                        <p className="text-xs text-gray-400">Stok: {p.stock}</p>
+                      </div>
+                      <div className="flex gap-1 shrink-0">
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(p)}>
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(p.id)} className="text-red-500">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </CardContent>
