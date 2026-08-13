@@ -80,6 +80,18 @@ export async function POST(req: NextRequest) {
     });
 
     if (!isFromMe && payload.body) {
+      try {
+        const { sendPushToAllAgents } = await import("@/lib/push");
+        const contactName = contact.name || phoneNumber;
+        await sendPushToAllAgents({
+          title: `Pesan dari ${contactName}`,
+          body: payload.body.slice(0, 100),
+          url: "/inbox",
+        });
+      } catch (pushErr) {
+        console.error("Push notification error:", pushErr);
+      }
+
       const { shouldSendGreeting, getGreetingMessage, isWithinOperatingHours } =
         await import("@/lib/greeting");
 
