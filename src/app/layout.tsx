@@ -39,8 +39,10 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
       </head>
       <body className="min-h-full flex flex-col bg-gray-50">
-        <Providers>{children}</Providers>
-        <PwaRegister />
+        <Providers>
+          {children}
+          <PwaRegister />
+        </Providers>
         <Toaster position="top-right" richColors />
       </body>
     </html>
