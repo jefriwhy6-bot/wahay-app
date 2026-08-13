@@ -16,7 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ShoppingBag, Plus, Pencil, Trash2, Loader2, Package } from "lucide-react";
+import { ShoppingBag, Plus, Pencil, Trash2, Loader2, Package, RefreshCw, CheckCircle2, XCircle } from "lucide-react";
 
 interface Product {
   id: string;
@@ -35,6 +35,8 @@ export default function CatalogPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<{ synced: number; failed: number } | null>(null);
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -108,6 +110,25 @@ export default function CatalogPage() {
     loadProducts();
   }
 
+  async function handleSync() {
+    setSyncing(true);
+    setSyncResult(null);
+    try {
+      const res = await fetch("/api/catalog/sync", { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        setSyncResult({ synced: data.summary.synced, failed: data.summary.failed });
+        toast.success(`Sync selesai: ${data.summary.synced} produk berhasil`);
+      } else {
+        toast.error(data.error || "Sync gagal");
+      }
+    } catch {
+      toast.error("Gagal sync ke WhatsApp");
+    } finally {
+      setSyncing(false);
+    }
+  }
+
   function formatPrice(n: number) {
     return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(n);
   }
@@ -128,6 +149,26 @@ export default function CatalogPage() {
           <h1 className="text-lg sm:text-2xl font-bold text-gray-900">Katalog Produk</h1>
           <Badge variant="secondary">{products.length}</Badge>
         </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSync}
+            disabled={syncing || products.length === 0}
+            className="gap-1.5 text-xs"
+          >
+            {syncing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+            Sync ke WA
+          </Button>
+          {syncResult && (
+            <span className="text-xs flex items-center gap-1">
+              {syncResult.failed === 0 ? (
+                <><CheckCircle2 className="w-3.5 h-3.5 text-green-500" /> {syncResult.synced} synced</>
+              ) : (
+                <><XCircle className="w-3.5 h-3.5 text-red-500" /> {syncResult.failed} gagal</>
+              )}
+            </span>
+          )}
         <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) resetForm(); }}>
           <DialogTrigger className="inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer">
             <Plus className="w-4 h-4" /> Tambah Produk
@@ -176,6 +217,7 @@ export default function CatalogPage() {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {products.length === 0 ? (
