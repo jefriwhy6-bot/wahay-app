@@ -81,19 +81,19 @@ export function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarProps) {
       )}
     >
       <div className={cn(
-        "flex items-center h-16 border-b border-white/10 transition-all duration-300",
-        collapsed ? "justify-center px-2" : "justify-between px-4"
+        "flex items-center h-14 border-b border-white/10 transition-all duration-300 shrink-0",
+        collapsed ? "justify-center px-2" : "justify-between px-3"
       )}>
-        <Link href="/inbox" className={cn("flex items-center overflow-hidden", collapsed ? "justify-center" : "gap-2.5")} onClick={onMobileClose}>
+        <Link href="/inbox" className={cn("flex items-center overflow-hidden", collapsed ? "justify-center" : "gap-2")} onClick={onMobileClose}>
           <div className={cn(
-            "bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-green-500/20 transition-all duration-300",
-            collapsed ? "w-8 h-8" : "w-9 h-9"
+            "bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center shrink-0 shadow-lg shadow-green-500/20 transition-all duration-300",
+            collapsed ? "w-8 h-8" : "w-8 h-8"
           )}>
-            <Bot className={cn("text-white transition-all duration-300", collapsed ? "w-4 h-4" : "w-5 h-5")} />
+            <Bot className="w-4 h-4 text-white" />
           </div>
-          <div className={cn("transition-all duration-300 overflow-hidden whitespace-nowrap", collapsed ? "w-0 opacity-0" : "w-auto opacity-100 ml-2.5")}>
-            <span className="font-bold text-base text-white tracking-tight">WA Chatbot</span>
-            <p className="text-[10px] text-green-400/80 -mt-0.5">AI Assistant</p>
+          <div className={cn("transition-all duration-300 overflow-hidden whitespace-nowrap", collapsed ? "w-0 opacity-0" : "w-auto opacity-100 ml-1.5")}>
+            <span className="font-bold text-sm text-white tracking-tight">WA Chatbot</span>
+            <p className="text-[9px] text-green-400/80 -mt-0.5">AI Assistant</p>
           </div>
         </Link>
         {!collapsed && (
@@ -101,9 +101,9 @@ export function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarProps) {
             variant="ghost"
             size="icon"
             onClick={onToggle}
-            className="hidden lg:flex h-7 w-7 text-white/50 hover:text-white hover:bg-white/10 shrink-0"
+            className="hidden lg:flex h-6 w-6 text-white/50 hover:text-white hover:bg-white/10 shrink-0"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-3.5 h-3.5" />
           </Button>
         )}
         {collapsed && (
@@ -111,15 +111,15 @@ export function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarProps) {
             variant="ghost"
             size="icon"
             onClick={onToggle}
-            className="hidden lg:flex absolute top-[18px] -right-3 h-6 w-6 rounded-full bg-slate-700 border border-slate-600 text-white/70 hover:text-white hover:bg-slate-600 shadow-md"
+            className="hidden lg:flex absolute top-[14px] -right-3 h-6 w-6 rounded-full bg-slate-700 border border-slate-600 text-white/70 hover:text-white hover:bg-slate-600 shadow-md"
           >
             <Menu className="w-3 h-3" />
           </Button>
         )}
       </div>
 
-      <ScrollArea className="flex-1 py-3">
-        <nav className={cn("space-y-0.5", collapsed ? "px-1.5" : "px-2")}>
+      <ScrollArea className="flex-1 py-2">
+        <nav className={cn("space-y-px", collapsed ? "px-1.5" : "px-2")}>
           {navItemsDef.filter((item) => {
             const userRole = (session?.user as { role?: string })?.role as Role | undefined;
             if (!userRole) return true;
@@ -135,17 +135,17 @@ export function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarProps) {
                 onClick={onMobileClose}
                 title={collapsed ? t.nav[item.tKey] : undefined}
                 className={cn(
-                  "flex items-center rounded-lg text-sm font-medium transition-all duration-200",
-                  collapsed ? "justify-center px-0 py-2.5 mx-auto w-10 h-10" : "gap-3 px-3 py-2.5",
+                  "flex items-center rounded-md text-[13px] font-medium transition-all duration-200",
+                  collapsed ? "justify-center px-0 py-2 mx-auto w-9 h-9" : "gap-2.5 px-2.5 py-[7px]",
                   isActive
-                    ? "bg-green-500/20 text-green-400 shadow-sm"
+                    ? "bg-green-500/20 text-green-400"
                     : "text-slate-400 hover:bg-white/5 hover:text-white"
                 )}
               >
                 <Icon
                   className={cn(
                     "shrink-0",
-                    collapsed ? "w-[20px] h-[20px]" : "w-[18px] h-[18px]",
+                    collapsed ? "w-[18px] h-[18px]" : "w-[16px] h-[16px]",
                     isActive ? "text-green-400" : "text-slate-500"
                   )}
                 />
@@ -156,28 +156,24 @@ export function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarProps) {
         </nav>
       </ScrollArea>
 
-      <div className={cn("border-t border-white/10 flex justify-center", collapsed ? "p-1.5" : "p-2")}>
-        <LanguageSwitcher compact={collapsed} />
-      </div>
-
-      <div className={cn("border-t border-white/10", collapsed ? "p-1.5" : "p-3")}>
+      <div className={cn("border-t border-white/10 shrink-0", collapsed ? "p-1.5" : "p-2")}>
         <DropdownMenu>
           <DropdownMenuTrigger
             className={cn(
-              "flex items-center w-full rounded-lg hover:bg-white/5 transition-colors outline-none",
-              collapsed ? "justify-center p-1.5" : "gap-3 px-2 py-2"
+              "flex items-center w-full rounded-md hover:bg-white/5 transition-colors outline-none",
+              collapsed ? "justify-center p-1.5" : "gap-2.5 px-2 py-1.5"
             )}
           >
-            <Avatar className={cn(collapsed ? "h-7 w-7" : "h-8 w-8")}>
-              <AvatarFallback className="bg-gradient-to-br from-green-400 to-emerald-600 text-white text-xs font-semibold">
+            <Avatar className="h-7 w-7">
+              <AvatarFallback className="bg-gradient-to-br from-green-400 to-emerald-600 text-white text-[10px] font-semibold">
                 {initials}
               </AvatarFallback>
             </Avatar>
             <div className={cn("flex-1 text-left transition-all duration-300 overflow-hidden", collapsed ? "w-0 opacity-0 hidden" : "w-auto opacity-100")}>
-              <p className="text-sm font-medium text-white truncate">
+              <p className="text-xs font-medium text-white truncate">
                 {session?.user?.name || "User"}
               </p>
-              <p className="text-xs text-slate-500 truncate">
+              <p className="text-[10px] text-slate-500 truncate">
                 {session?.user?.email}
               </p>
             </div>
@@ -189,6 +185,10 @@ export function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarProps) {
               <p className="text-[10px] text-emerald-600 font-medium mt-0.5">
                 {(session?.user as { role?: string })?.role || ""}
               </p>
+            </div>
+            <DropdownMenuSeparator />
+            <div className="px-2 py-1">
+              <LanguageSwitcher compact={false} />
             </div>
             <DropdownMenuSeparator />
             {hasAccess(((session?.user as { role?: string })?.role || "AGENT") as Role, "ADMIN") && (
